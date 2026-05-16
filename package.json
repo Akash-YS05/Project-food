@@ -1,0 +1,17 @@
+{
+  "name": "bam-bam-cake-shop-ecosystem",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/*",
+    "backend",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:customer": "npm --workspace @bambam/customer-app run start",
+    "dev:admin": "npm --workspace @bambam/admin-app run start",
+    "dev:backend": "npm --workspace @bambam/backend run dev",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
