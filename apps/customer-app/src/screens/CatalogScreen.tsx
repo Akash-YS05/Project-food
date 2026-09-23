@@ -5,7 +5,7 @@ import { ProductCard } from '../components/ProductCard';
 import { Screen } from '../components/Screen';
 import { SectionHeader } from '../components/SectionHeader';
 import { useAppSelector } from '../store';
-import { customerTheme } from '../theme';
+import { customerTheme, type as t } from '../theme';
 
 const categories = ['all', 'cakes', 'pizza', 'burger'] as const;
 
@@ -27,7 +27,13 @@ export const CatalogScreen = ({ navigation }: any) => {
   return (
     <Screen>
       <SectionHeader title="Pure Veg Menu" subtitle="All items are crafted in a 100% vegetarian kitchen." />
-      <TextInput value={query} onChangeText={setQuery} placeholder="Search by item name" style={styles.search} />
+      <TextInput
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search by item name"
+        placeholderTextColor={customerTheme.colors.textMuted}
+        style={styles.search}
+      />
       <View style={styles.filterRow}>
         {categories.map((item) => (
           <Pressable key={item} onPress={() => setCategory(item)} style={[styles.chip, category === item && styles.chipActive]}>
@@ -37,39 +43,39 @@ export const CatalogScreen = ({ navigation }: any) => {
           </Pressable>
         ))}
       </View>
-      {filtered.map((product) => (
-        <ProductCard key={product._id} product={product} onPress={() => navigation.navigate('ProductDetails', { productId: product._id })} />
-      ))}
+      {filtered.length === 0 ? (
+        <Text style={styles.empty}>No items match your search.</Text>
+      ) : (
+        filtered.map((product) => (
+          <ProductCard
+            key={product._id}
+            product={product}
+            onPress={() => navigation.navigate('ProductDetails', { productId: product._id })}
+          />
+        ))
+      )}
     </Screen>
   );
 };
 
 const styles = StyleSheet.create({
   search: {
+    ...t.input,
     borderRadius: customerTheme.radius.md,
     backgroundColor: customerTheme.colors.surface,
     paddingHorizontal: 16,
-    paddingVertical: 14
+    paddingVertical: 14,
+    color: customerTheme.colors.text
   },
-  filterRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10
-  },
+  filterRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   chip: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: customerTheme.radius.pill,
     backgroundColor: customerTheme.colors.mutedSurface
   },
-  chipActive: {
-    backgroundColor: '#E9F7EE'
-  },
-  chipText: {
-    color: customerTheme.colors.textMuted,
-    fontWeight: '700'
-  },
-  chipTextActive: {
-    color: customerTheme.colors.primary
-  }
+  chipActive: { backgroundColor: '#E9F7EE' },
+  chipText: { ...t.label, color: customerTheme.colors.textMuted },
+  chipTextActive: { color: customerTheme.colors.primary },
+  empty: { ...t.body, color: customerTheme.colors.textMuted, textAlign: 'center', paddingVertical: 32 }
 });

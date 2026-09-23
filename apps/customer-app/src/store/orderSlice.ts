@@ -5,7 +5,8 @@ import { notificationApi, orderApi } from '../api/services';
 interface OrderState {
   orders: Order[];
   notifications: NotificationPayload[];
-  status: 'idle' | 'loading' | 'success' | 'error';
+  // Distinct statuses so concurrent fetches don't stomp each other
+  status: 'idle' | 'loading' | 'placing' | 'success' | 'error';
 }
 
 const initialState: OrderState = {
@@ -42,19 +43,38 @@ const orderSlice = createSlice({
         state.orders = action.payload.length > 0 ? action.payload : demoOrders;
         state.status = 'success';
       })
+      .addCase(fetchOrders.rejected, (state) => {
+        state.status = 'error';
+      })
+      // placeOrder gets its own 'placing' status so the checkout button can
+      // show a spinner independently of background fetchOrders calls
+      .addCase(placeOrder.pending, (state) => {
+        state.status = 'placing';
+      })
       .addCase(placeOrder.fulfilled, (state, action) => {
         state.orders.unshift(action.payload);
         state.status = 'success';
       })
+      .addCase(placeOrder.rejected, (state) => {
+        state.status = 'error';
+      })
+      .addCase(fetchNotifications.pending, (state) => {
+        // Don't overwrite 'placing' — notifications load silently in the background
+        if (state.status === 'idle' || state.status === 'success') {
+          state.status = 'loading';
+        }
+      })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.notifications = action.payload;
+        if (state.status === 'loading') {
+          state.status = 'success';
+        }
       })
-      .addMatcher(
-        (action) => action.type.startsWith('orders/') && action.type.endsWith('/rejected'),
-        (state) => {
+      .addCase(fetchNotifications.rejected, (state) => {
+        if (state.status === 'loading') {
           state.status = 'error';
         }
-      );
+      });
   }
 });
 

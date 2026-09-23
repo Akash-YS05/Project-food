@@ -1,6 +1,6 @@
 import { brand } from '@bambam/shared';
 import { StyleSheet, Text, View } from 'react-native';
-import { customerTheme } from '../theme';
+import { customerTheme, type as t } from '../theme';
 
 export const PureVegBadge = () => (
   <View style={styles.wrapper}>
@@ -14,22 +14,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    gap: 7,
+    paddingHorizontal: 11,
+    paddingVertical: 5,
     borderRadius: customerTheme.radius.pill,
     backgroundColor: '#E9F7EE'
   },
   dot: {
-    width: 10,
-    height: 10,
+    width: 9,
+    height: 9,
     borderRadius: 5,
     backgroundColor: customerTheme.colors.pureVeg,
     borderWidth: 1,
     borderColor: '#0F6B30'
   },
-  label: {
-    color: customerTheme.colors.primaryDark,
-    fontWeight: '700'
-  }
+  label: { ...t.caption, color: customerTheme.colors.primaryDark }
 });

@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { customerTheme } from '../theme';
+import { customerTheme, type as t } from '../theme';
 
 interface SectionHeaderProps {
   title: string;
@@ -14,16 +14,7 @@ export const SectionHeader = ({ title, subtitle }: SectionHeaderProps) => (
 );
 
 const styles = StyleSheet.create({
-  wrapper: {
-    gap: 4
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: customerTheme.colors.text
-  },
-  subtitle: {
-    color: customerTheme.colors.textMuted,
-    fontSize: 14
-  }
+  wrapper: { gap: 4 },
+  title: { ...t.heading, color: customerTheme.colors.text },
+  subtitle: { ...t.caption, color: customerTheme.colors.textMuted }
 });

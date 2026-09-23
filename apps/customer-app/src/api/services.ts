@@ -19,6 +19,9 @@ export const authApi = {
   },
   registerPushToken(expoPushToken: string) {
     return apiClient.post('/auth/push-token', { expoPushToken });
+  },
+  deregisterPushToken(expoPushToken: string) {
+    return apiClient.delete('/auth/push-token', { data: { expoPushToken } });
   }
 };
 

@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
-import { customerTheme } from '../theme';
+import { customerTheme, type as t } from '../theme';
 
 interface PrimaryButtonProps {
   label: string;
@@ -11,13 +11,20 @@ interface PrimaryButtonProps {
 export const PrimaryButton = ({ label, onPress, variant = 'solid', loading }: PrimaryButtonProps) => (
   <Pressable
     onPress={onPress}
-    style={[styles.button, variant === 'outline' ? styles.outline : styles.solid]}
+    style={({ pressed }) => [
+      styles.button,
+      variant === 'outline' ? styles.outline : styles.solid,
+      pressed && styles.pressed
+    ]}
     disabled={loading}
+    accessibilityRole="button"
   >
     {loading ? (
       <ActivityIndicator color={variant === 'outline' ? customerTheme.colors.primary : '#fff'} />
     ) : (
-      <Text style={[styles.label, variant === 'outline' ? styles.outlineLabel : styles.solidLabel]}>{label}</Text>
+      <Text style={[styles.label, variant === 'outline' ? styles.outlineLabel : styles.solidLabel]}>
+        {label}
+      </Text>
     )}
   </Pressable>
 );
@@ -27,24 +34,17 @@ const styles = StyleSheet.create({
     minHeight: 52,
     borderRadius: customerTheme.radius.md,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    paddingHorizontal: 20
   },
-  solid: {
-    backgroundColor: customerTheme.colors.primary
-  },
+  solid: { backgroundColor: customerTheme.colors.primary },
   outline: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: customerTheme.colors.primary,
-    backgroundColor: customerTheme.colors.surface
+    backgroundColor: 'transparent'
   },
-  label: {
-    fontWeight: '700',
-    fontSize: 16
-  },
-  solidLabel: {
-    color: '#fff'
-  },
-  outlineLabel: {
-    color: customerTheme.colors.primary
-  }
+  pressed: { opacity: 0.82 },
+  label: { ...t.label },
+  solidLabel: { color: '#fff' },
+  outlineLabel: { color: customerTheme.colors.primary }
 });

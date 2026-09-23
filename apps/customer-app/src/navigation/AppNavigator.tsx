@@ -1,8 +1,9 @@
 import { brand } from '@bambam/shared';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthScreen } from '../screens/AuthScreen';
 import { CartScreen } from '../screens/CartScreen';
 import { CatalogScreen } from '../screens/CatalogScreen';
@@ -17,6 +18,8 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 import { WishlistScreen } from '../screens/WishlistScreen';
 import { useAppSelector } from '../store';
 import { customerTheme } from '../theme';
+
+const ONBOARDING_KEY = 'bam_bam_onboarding_seen';
 
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
@@ -39,18 +42,32 @@ const MainTabs = () => (
 
 export const AppNavigator = () => {
   const auth = useAppSelector((state) => state.auth);
-  const [onboardingSeen, setOnboardingSeen] = useState(false);
+  // null = still reading from storage (don't flash onboarding before check)
+  const [onboardingSeen, setOnboardingSeen] = useState<boolean | null>(null);
 
-  const initialRoute = useMemo(() => {
-    if (!onboardingSeen) return 'Onboarding';
-    return auth.user ? 'Main' : 'Auth';
-  }, [auth.user, onboardingSeen]);
+  useEffect(() => {
+    AsyncStorage.getItem(ONBOARDING_KEY)
+      .then((value) => setOnboardingSeen(value === 'true'))
+      .catch(() => setOnboardingSeen(false)); // default to showing onboarding on error
+  }, []);
+
+  const handleOnboardingDone = () => {
+    setOnboardingSeen(true);
+    void AsyncStorage.setItem(ONBOARDING_KEY, 'true').catch(() => {
+      // best-effort — if storage fails the user just sees onboarding again next time
+    });
+  };
+
+  // Still reading persisted value — render nothing so we don't flash the wrong screen
+  if (onboardingSeen === null) {
+    return null;
+  }
 
   return (
-    <Stack.Navigator initialRouteName={initialRoute}>
+    <Stack.Navigator>
       {!onboardingSeen ? (
         <Stack.Screen name="Onboarding" options={{ headerShown: false }}>
-          {(props) => <OnboardingScreen {...props} onDone={() => setOnboardingSeen(true)} />}
+          {(props) => <OnboardingScreen {...props} onDone={handleOnboardingDone} />}
         </Stack.Screen>
       ) : null}
       {!auth.user ? (

@@ -8,13 +8,18 @@ import { registerSocketServer } from './services/socketService';
 const bootstrap = async () => {
   await connectDatabase();
   const server = http.createServer(app);
-  const allowedOrigins = [env.CLIENT_APP_URL, env.ADMIN_APP_URL].filter(
-    (origin): origin is string => Boolean(origin)
-  );
+  const allowedOrigins = [
+    env.CLIENT_APP_URL,
+    env.ADMIN_APP_URL,
+    'http://localhost:8081',
+    'http://localhost:8082',
+    'http://localhost:19006'
+  ].filter((origin): origin is string => Boolean(origin));
 
   const io = new Server(server, {
     cors: {
-      origin: allowedOrigins
+      origin: allowedOrigins,
+      credentials: true
     }
   });
 

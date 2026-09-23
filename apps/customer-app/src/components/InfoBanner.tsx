@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, Text, View } from 'react-native';
-import { customerTheme } from '../theme';
+import { customerTheme, type as t } from '../theme';
 
 interface InfoBannerProps {
   title: string;
@@ -23,15 +23,8 @@ const styles = StyleSheet.create({
     padding: customerTheme.spacing.lg,
     gap: 10
   },
-  title: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '900'
-  },
-  message: {
-    color: '#F4FCEF',
-    lineHeight: 22
-  },
+  title: { ...t.heading, color: '#fff' },
+  message: { ...t.body, color: '#F4FCEF' },
   badge: {
     alignSelf: 'flex-start',
     backgroundColor: 'rgba(255,255,255,0.18)',
@@ -39,8 +32,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6
   },
-  badgeText: {
-    color: '#fff',
-    fontWeight: '700'
-  }
+  badgeText: { ...t.label, color: '#fff', fontSize: 13 }
 });
