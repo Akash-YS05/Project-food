@@ -30,15 +30,54 @@ export const CheckoutScreen = ({ navigation }: any) => {
     }, 0);
     const tax = subtotal * 0.05;
     const deliveryCharge = subtotal > 499 ? 0 : 40;
-    const discount = cart.coupon ? Math.min(subtotal * 0.1, cart.coupon.maxDiscountValue ?? 9999) : 0;
-    return { subtotal, tax, deliveryCharge, discount, grandTotal: subtotal + tax + deliveryCharge - discount };
+    const rawDiscount = cart.coupon
+      ? cart.coupon.discountType === 'percentage'
+        ? subtotal * (cart.coupon.discountValue / 100)
+        : cart.coupon.discountValue
+      : 0;
+    const discount = cart.coupon && subtotal >= cart.coupon.minimumOrderValue
+      ? Math.min(
+          rawDiscount,
+          cart.coupon.maxDiscountValue ?? rawDiscount,
+          subtotal
+        )
+      : 0;
+    const grandTotal = Math.max(0, subtotal + tax + deliveryCharge - discount);
+    return { subtotal, tax, deliveryCharge, discount, grandTotal };
   }, [cart.coupon, cart.items, products]);
 
   const address = auth?.addresses[0];
 
+  const getScheduledFor = () => {
+    // Accept "today, 7:00 PM" or "tomorrow, 7:00 PM"
+    const fullMatch = deliveryTime.trim().match(/^(today|tomorrow),\s*(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+    if (fullMatch) {
+      const [, day, hourText, minuteText, period] = fullMatch;
+      let hour = Number(hourText) % 12;
+      if (period.toLowerCase() === 'pm') hour += 12;
+      const scheduled = new Date();
+      if (day.toLowerCase() === 'tomorrow') scheduled.setDate(scheduled.getDate() + 1);
+      scheduled.setHours(hour, Number(minuteText), 0, 0);
+      return scheduled.toISOString();
+    }
+    // Simple time assuming today, e.g., "7:30 PM"
+    const simpleMatch = deliveryTime.trim().match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+    if (simpleMatch) {
+      const [, hourText, minuteText, period] = simpleMatch;
+      let hour = Number(hourText) % 12;
+      if (period.toLowerCase() === 'pm') hour += 12;
+      const scheduled = new Date();
+      scheduled.setHours(hour, Number(minuteText), 0, 0);
+      return scheduled.toISOString();
+    }
+    // If parsing fails, omit scheduledFor (immediate delivery)
+    return undefined;
+  };
+
   const handlePlaceOrder = async () => {
     if (!address) {
-      info('Please add a delivery address in your profile first.');
+      info('Add a delivery address in your profile, then return to checkout.');
+      navigation.navigate('Main', { screen: 'ProfileTab' });
       return;
     }
     if (cart.items.length === 0) {
@@ -54,19 +93,15 @@ export const CheckoutScreen = ({ navigation }: any) => {
       if (!variant) return null;
       return {
         productId: product._id,
-        productName: product.name,
-        category: product.category,
-        imageUrl: product.imageUrls[0] ?? '',
-        variantLabel: variant.label,
+        variantId: variant._id ?? variant.value,
         quantity: item.quantity,
-        unitPrice: variant.price,
-        totalPrice: (variant.price + item.addOns.reduce((s, a) => s + a.price, 0)) * item.quantity,
-        addOns: item.addOns,
-        veg: true
+        addOnIds: item.addOns.map((addOn) => addOn._id).filter((id): id is string => Boolean(id))
       };
     });
 
-    if (resolvedItems.some((item) => item === null)) {
+    // Filter out any items that could not be resolved (e.g., removed products)
+    const sanitizedItems = resolvedItems.filter((i): i is NonNullable<typeof i> => i !== null);
+    if (sanitizedItems.length !== resolvedItems.length) {
       info('Some items are no longer available. Please review your cart.');
       return;
     }
@@ -77,9 +112,7 @@ export const CheckoutScreen = ({ navigation }: any) => {
           items: resolvedItems as NonNullable<(typeof resolvedItems)[0]>[],
           address,
           paymentMethod,
-          paymentStatus: paymentMethod === 'cod' ? 'pending' : 'paid',
-          pricing: summary,
-          scheduledFor: deliveryTime,
+          scheduledFor: getScheduledFor(),
           note: note || undefined,
           couponCode: cart.coupon?.code
         })

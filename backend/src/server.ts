@@ -35,6 +35,15 @@ const bootstrap = async () => {
 
   registerSocketServer(io);
 
+  server.once('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EADDRINUSE') {
+      console.error(`Port ${env.PORT} is already in use. Stop the existing backend process or set a different PORT in backend/.env.`);
+    } else {
+      console.error('Failed to start HTTP server', error);
+    }
+    process.exit(1);
+  });
+
   server.listen(env.PORT, () => {
     console.log(`Bam Bam backend running on port ${env.PORT}`);
   });

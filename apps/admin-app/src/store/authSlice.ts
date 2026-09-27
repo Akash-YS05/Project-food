@@ -84,7 +84,7 @@ const authSlice = createSlice({
           });
         }
       })
-      .addCase(loginAdmin.rejected, (state, action: PayloadAction<unknown, string, unknown, Error>) => {
+      .addCase(loginAdmin.rejected, (state, action) => {
         state.status = 'error';
         state.error = action.error?.message ?? 'Login failed. Please try again.';
       })

@@ -44,6 +44,11 @@ export const loginWithGoogle = createAsyncThunk(
   }
 );
 
+export const addCustomerAddress = createAsyncThunk('auth/addAddress', async (payload: UserProfile['addresses'][number]) => {
+  const response = await authApi.addAddress(payload);
+  return response.data.user;
+});
+
 export const bootstrapAuth = createAsyncThunk('auth/bootstrap', async () => {
   const token = await storage.getToken();
   if (!token) {
@@ -120,6 +125,11 @@ const authSlice = createSlice({
       .addCase(signupCustomer.fulfilled, fulfilled)
       .addCase(loginWithOtp.fulfilled, fulfilled)
       .addCase(loginWithGoogle.fulfilled, fulfilled)
+      .addCase(addCustomerAddress.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user = action.payload;
+        }
+      })
       // Bootstrap: silent restore, stays in 'bootstrapping' until resolved
       .addCase(bootstrapAuth.fulfilled, (state, action) => {
         if (!action.payload) {

@@ -1,6 +1,8 @@
+// Minimal product card — full-bleed image, thin rule divider, light text.
+// No shadow, no heavy rounded corners, no colour block.
 import { Product } from '@bambam/shared';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { customerTheme, type as t } from '../theme';
+import { palette, type as t } from '../theme';
 import { formatPrice } from '../utils/format';
 import { PureVegBadge } from './PureVegBadge';
 
@@ -10,37 +12,68 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product, onPress }: ProductCardProps) => (
-  <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
-    <Image source={{ uri: product.imageUrls[0] }} style={styles.image} />
-    <View style={styles.content}>
+  <Pressable
+    onPress={onPress}
+    style={({ pressed }) => [styles.card, pressed && { opacity: 0.88 }]}
+    accessibilityRole="button"
+  >
+    <Image
+      source={{ uri: product.imageUrls[0] }}
+      style={styles.image}
+      resizeMode="cover"
+    />
+    <View style={styles.body}>
       <PureVegBadge />
       <Text style={styles.name}>{product.name}</Text>
-      <Text style={styles.description} numberOfLines={2}>{product.shortDescription}</Text>
-      <View style={styles.row}>
+      <Text style={styles.desc} numberOfLines={2}>{product.shortDescription}</Text>
+      <View style={styles.foot}>
         <Text style={styles.price}>{formatPrice(product.variants[0]?.price ?? 0)}</Text>
         <Text style={styles.rating}>★ {product.rating.toFixed(1)}</Text>
       </View>
     </View>
+    <View style={styles.rule} />
   </Pressable>
 );
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: customerTheme.colors.surface,
-    borderRadius: customerTheme.radius.lg,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 3
+    backgroundColor: palette.surface,
   },
-  pressed: { opacity: 0.9 },
-  image: { width: '100%', height: 176 },
-  content: { padding: customerTheme.spacing.md, gap: 8 },
-  name: { ...t.title, color: customerTheme.colors.text },
-  description: { ...t.body, color: customerTheme.colors.textMuted },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  price: { ...t.price, color: customerTheme.colors.primary },
-  rating: { ...t.caption, color: customerTheme.colors.textMuted }
+  image: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    backgroundColor: palette.hairline,
+  },
+  body: {
+    paddingTop: 12,
+    paddingBottom: 16,
+    gap: 6,
+  },
+  name: {
+    ...t.title,
+    color: palette.text,
+  },
+  desc: {
+    ...t.body,
+    color: palette.textSoft,
+  },
+  foot: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  price: {
+    ...t.price,
+    color: palette.text,
+  },
+  rating: {
+    ...t.caption,
+    color: palette.textFaint,
+  },
+  rule: {
+    height: 1,
+    backgroundColor: palette.hairline,
+  },
 });

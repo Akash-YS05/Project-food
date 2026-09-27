@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { NotificationPayload, Order, demoOrders } from '@bambam/shared';
-import { notificationApi, orderApi } from '../api/services';
+import { notificationApi, orderApi, PlaceOrderPayload } from '../api/services';
 
 interface OrderState {
   orders: Order[];
@@ -20,7 +20,7 @@ export const fetchOrders = createAsyncThunk('orders/fetchOrders', async () => {
   return response.data.data;
 });
 
-export const placeOrder = createAsyncThunk('orders/placeOrder', async (payload: Partial<Order>) => {
+export const placeOrder = createAsyncThunk('orders/placeOrder', async (payload: PlaceOrderPayload) => {
   const response = await orderApi.place(payload);
   return response.data;
 });
